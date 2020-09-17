@@ -137,6 +137,16 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
 
   var _super = _createSuper(SAInputSelect);
 
+  _createClass(SAInputSelect, [{
+    key: "value",
+    get: function get() {
+      return this._input.value;
+    },
+    set: function set(text) {
+      this._input.value = text;
+    }
+  }]);
+
   function SAInputSelect() {
     var _this;
 
@@ -144,6 +154,7 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
 
     _this = _super.call(this);
     _this._isAppend = false;
+    _this._appendSeparator = ' ';
     return _this;
   }
 
@@ -151,27 +162,44 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
     key: "attributeChangedCallback",
     value: function attributeChangedCallback(attrName, oldValue, newValue) {
       if (attrName === 'data-is-append') {
-        if (newValue) {
-          this._isAppend = newValue === 'true';
+        if (newValue != undefined) {
+          this._isAppend = newValue === 'true' || newValue === '1' || newValue == '';
         } else {
           this._isAppend = false;
+        }
+      } else if (attrName === 'data-append-separator') {
+        if (newValue) {
+          this._appendSeparator = newValue;
+        } else {
+          this._appendSeparator = ' ';
         }
       }
     }
   }, {
     key: "connectedCallback",
     value: function connectedCallback() {
-      var shadow = this.attachShadow({
-        mode: 'open'
-      });
-      this.makeInput(shadow);
-      this.makeDropdown(shadow);
+      var mountPoint = document.createElement('div');
+      this.appendChild(mountPoint); //const mountPoint = this.attachShadow({ mode: 'open' });
+      //mountPoint.innerHTML = '<style>.dropdown-menu {display: none;position: absolute;}.dropdown-menu.open {display: block;}</style>';
+
+      this.makeInput(mountPoint);
+      this.makeDropdown(mountPoint);
       this.assignEvent();
     }
   }, {
-    key: "init",
-    value: function init() {
-      this.render();
+    key: "disconnectedCallback",
+    value: function disconnectedCallback() {
+      this.setAttribute('value', this._input.value);
+
+      this._input.removeEventListener('click', this.handleInputClick);
+
+      this._input.removeEventListener('keydown', this.hideDropdown);
+
+      this.removeChild(this._input);
+      delete this._input;
+      this.removeChild(this._dropdown);
+      delete this._dropdown;
+      document.removeEventListener('click', this.hideDropdown);
     }
   }, {
     key: "makeInput",
@@ -188,6 +216,11 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
       var disabled = this.getAttribute('disabled');
       if (disabled != undefined) this._input.setAttribute('disabled', this.getAttribute('disabled'));
       this._input.value = this.getAttribute('value') || '';
+
+      this._input.addEventListener('click', this.handleInputClick.bind(this));
+
+      this._input.addEventListener('keydown', this.hideDropdown.bind(this));
+
       shadow.appendChild(this._input);
     }
   }, {
@@ -198,84 +231,75 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
       this._dropdown = document.createElement('ul');
       this._dropdown.className = 'dropdown-menu';
       var options = this.getElementsByTagName('option');
-      var optionList = Array.prototype.slice.call(options);
-      optionList.forEach(function (el) {
+      Array.from(options).forEach(function (el) {
         var text = el.innerHTML;
         var li = document.createElement('li');
-        li.innerHTML = '<li><a>' + text.replace(/^$/, '&nbsp;') + '</a></li>';
+        var a = document.createElement('a');
+        a.innerHTML = text.replace(/^$/, '&nbsp;');
+        a.addEventListener('click', function (ev) {
+          ev.preventDefault();
+
+          _this2.handleItemClick(a.innerHTML);
+        });
+        li.appendChild(a);
 
         _this2._dropdown.appendChild(li);
       });
       shadow.appendChild(this._dropdown);
     }
   }, {
+    key: "hideDropdown",
+    value: function hideDropdown() {
+      if (this._dropdown.classList.contains('open')) {
+        this._dropdown.classList.remove('open');
+      }
+    }
+  }, {
+    key: "handleInputClick",
+    value: function handleInputClick(ev) {
+      ev.stopPropagation();
+
+      if (this._dropdown.classList.contains('open')) {
+        this._dropdown.classList.remove('open');
+      } else {
+        this._dropdown.classList.add('open');
+
+        this._dropdown.style.top = ev.target.offsetTop + ev.target.offsetHeight;
+        this._dropdown.style.left = ev.target.offsetLeft;
+      }
+    }
+  }, {
+    key: "handleItemClick",
+    value: function handleItemClick(text) {
+      if (this._isAppend) {
+        this._input.value += this._appendSeparator + text.replace(/^&nbsp;$/, '');
+      } else {
+        this._input.value = text.replace(/^&nbsp;$/, '');
+      }
+
+      this.hideDropdown();
+    }
+  }, {
     key: "assignEvent",
     value: function assignEvent() {
-      var _this3 = this;
-
-      this._input.addEventListener('click', function (ev) {
-        ev.stopPropagation();
-
-        if (_this3._dropdown.classList.contains('open')) {
-          _this3._dropdown.classList.remove('open');
-        } else {
-          _this3._dropdown.classList.add('open');
-
-          _this3._dropdown.style.top = ev.target.offsetTop + ev.target.offsetHeight;
-          _this3._dropdown.style.left = ev.target.offsetLeft;
-          console.log(ev);
-        }
-      });
-      /*var instance = this;
-      this.$input.on('click', function(ev) {
-          ev.stopPropagation();
-          var self = $(this);
-           if (instance.$dropdown.is(':visible')) {
-              instance.$dropdown.hide();
-          } else {
-              instance.$dropdown.show();
-              instance.$dropdown.css({
-                  top: (self.position().top + self.height()) + 'px',
-                  left: self.css('left')
-              });
-          }
-      });
-       this.$input.on('keydown', () => {
-          if (instance.$dropdown.is(':visible')) {
-              instance.$dropdown.hide();
-          }
-      });
-       this.$input.on('change', () => {
+      document.addEventListener('click', this.hideDropdown.bind(this));
+      /*
+      this.$input.on('change', () => {
           instance.$element.trigger('change');
       });
        this.$dropdown.on('click', 'a', function(ev) {
-          ev.preventDefault();
-          instance.$input.val($(this)
-              .text()
-              .replace(/^&nbsp;$/, ''))
-              .trigger('change');
-      });
-       $(document)
-          .on('click', () => {
-              if (instance.$dropdown.is(':visible')) {
-                  instance.$dropdown.hide();
-              }
-          });*/
-
+          instance.$input.trigger('change');
+      });*/
     }
   }, {
     key: "render",
     value: function render() {
       this.$element.removeAttr('name'); // after copy to Input
-
-      this.$element.after(this.$dropdown);
-      this.$element.after(this.$input);
-      this.$element.hide();
     }
   }], [{
     key: "observedAttributes",
     get: function get() {
-      return ['data-is-append'];
+      return ['data-is-append', 'data-append-separator'];
     }
   }]);
 
