@@ -8,11 +8,14 @@ class SAInputSelect extends HTMLElement {
     _dropdown: HTMLElement;
 
     get value() {
-        return this._input.value;
+        return this.getAttribute('value');
     }
 
     set value(text) {
-        this._input.value = text;
+        this.setAttribute('value', text);
+        if (this._input) {
+            this._input.value = text;
+        }
     }
 
     constructor() {
@@ -50,14 +53,12 @@ class SAInputSelect extends HTMLElement {
     }
 
     disconnectedCallback() {
-        this.setAttribute('value', this._input.value);
-
         this._input.removeEventListener('click', this.handleInputClick);
         this._input.removeEventListener('keydown', this.hideDropdown);
-        this.removeChild(this._input);
-        delete this._input;
+        this._input.removeEventListener('change', this.makeChangeEvent);
 
-        this.removeChild(this._dropdown);
+        this.removeChild(this.getElementsByTagName('div').item(0));
+        delete this._input;
         delete this._dropdown;
 
         document.removeEventListener('click', this.hideDropdown);
@@ -66,8 +67,7 @@ class SAInputSelect extends HTMLElement {
     makeInput(shadow: HTMLElement) {
         this._input = document.createElement('input');
         this._input.autocomplete = 'off';
-        this._input.setAttribute('class', this.getAttribute('class') || '');
-        this._input.setAttribute('style', this.getAttribute('style') || '');
+        this._input.setAttribute('class', this.getAttribute('input-class') || '');
         const readonly = this.getAttribute('readonly');
         if (readonly != undefined)
             this._input.setAttribute('readonly', this.getAttribute('readonly'));
@@ -77,13 +77,15 @@ class SAInputSelect extends HTMLElement {
         this._input.value = this.getAttribute('value') || '';
         this._input.addEventListener('click', this.handleInputClick.bind(this));
         this._input.addEventListener('keydown', this.hideDropdown.bind(this));
+        this._input.addEventListener('change', this.makeChangeEvent.bind(this));
 
         shadow.appendChild(this._input);
     }
 
     makeDropdown(shadow: HTMLElement) {
         this._dropdown = document.createElement('ul');
-        this._dropdown.className = 'dropdown-menu';
+        this._dropdown.setAttribute('class', this.getAttribute('dropdown-class') || 'dropdown-menu');
+        //this._dropdown.className = 'dropdown-menu';
         const options = this.getElementsByTagName('option');
         Array.from(options).forEach((el: HTMLOptionElement) => {
             const text = el.innerHTML;
@@ -120,24 +122,21 @@ class SAInputSelect extends HTMLElement {
 
     handleItemClick(text: string) {
         if (this._isAppend) {
-            this._input.value += this._appendSeparator + text.replace(/^&nbsp;$/, '');
+            this.value += this._appendSeparator + text.replace(/^&nbsp;$/, '');
         } else {
-            this._input.value = text.replace(/^&nbsp;$/, '');
+            this.value = text.replace(/^&nbsp;$/, '');
         }
+        this.makeChangeEvent();
         this.hideDropdown();
+    }
+
+    makeChangeEvent() {
+        const event = new Event('change');
+        this.dispatchEvent(event);
     }
 
     assignEvent() {
         document.addEventListener('click', this.hideDropdown.bind(this));
-
-        /*
-        this.$input.on('change', () => {
-            instance.$element.trigger('change');
-        });
-
-        this.$dropdown.on('click', 'a', function(ev) {
-            instance.$input.trigger('change');
-        });*/
     }
 
     render() {

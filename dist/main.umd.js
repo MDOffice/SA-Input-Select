@@ -140,10 +140,14 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
   _createClass(SAInputSelect, [{
     key: "value",
     get: function get() {
-      return this._input.value;
+      return this.getAttribute('value');
     },
     set: function set(text) {
-      this._input.value = text;
+      this.setAttribute('value', text);
+
+      if (this._input) {
+        this._input.value = text;
+      }
     }
   }]);
 
@@ -189,15 +193,14 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
   }, {
     key: "disconnectedCallback",
     value: function disconnectedCallback() {
-      this.setAttribute('value', this._input.value);
-
       this._input.removeEventListener('click', this.handleInputClick);
 
       this._input.removeEventListener('keydown', this.hideDropdown);
 
-      this.removeChild(this._input);
+      this._input.removeEventListener('change', this.makeChangeEvent);
+
+      this.removeChild(this.getElementsByTagName('div').item(0));
       delete this._input;
-      this.removeChild(this._dropdown);
       delete this._dropdown;
       document.removeEventListener('click', this.hideDropdown);
     }
@@ -207,9 +210,7 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
       this._input = document.createElement('input');
       this._input.autocomplete = 'off';
 
-      this._input.setAttribute('class', this.getAttribute('class') || '');
-
-      this._input.setAttribute('style', this.getAttribute('style') || '');
+      this._input.setAttribute('class', this.getAttribute('input-class') || '');
 
       var readonly = this.getAttribute('readonly');
       if (readonly != undefined) this._input.setAttribute('readonly', this.getAttribute('readonly'));
@@ -221,6 +222,8 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
 
       this._input.addEventListener('keydown', this.hideDropdown.bind(this));
 
+      this._input.addEventListener('change', this.makeChangeEvent.bind(this));
+
       shadow.appendChild(this._input);
     }
   }, {
@@ -229,7 +232,10 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
       var _this2 = this;
 
       this._dropdown = document.createElement('ul');
-      this._dropdown.className = 'dropdown-menu';
+
+      this._dropdown.setAttribute('class', this.getAttribute('dropdown-class') || 'dropdown-menu'); //this._dropdown.className = 'dropdown-menu';
+
+
       var options = this.getElementsByTagName('option');
       Array.from(options).forEach(function (el) {
         var text = el.innerHTML;
@@ -272,24 +278,24 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
     key: "handleItemClick",
     value: function handleItemClick(text) {
       if (this._isAppend) {
-        this._input.value += this._appendSeparator + text.replace(/^&nbsp;$/, '');
+        this.value += this._appendSeparator + text.replace(/^&nbsp;$/, '');
       } else {
-        this._input.value = text.replace(/^&nbsp;$/, '');
+        this.value = text.replace(/^&nbsp;$/, '');
       }
 
+      this.makeChangeEvent();
       this.hideDropdown();
+    }
+  }, {
+    key: "makeChangeEvent",
+    value: function makeChangeEvent() {
+      var event = new Event('change');
+      this.dispatchEvent(event);
     }
   }, {
     key: "assignEvent",
     value: function assignEvent() {
       document.addEventListener('click', this.hideDropdown.bind(this));
-      /*
-      this.$input.on('change', () => {
-          instance.$element.trigger('change');
-      });
-       this.$dropdown.on('click', 'a', function(ev) {
-          instance.$input.trigger('change');
-      });*/
     }
   }, {
     key: "render",
