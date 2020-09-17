@@ -1,0 +1,9 @@
+.dropdown-menu {
+    display: none;
+    position: absolute;
+}
+
+.dropdown-menu.open {
+    display: block;
+}
+

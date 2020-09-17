@@ -1,0 +1,14 @@
+{
+    "presets": [
+        [
+            "@babel/env",
+            {
+                "useBuiltIns": false
+            }
+        ],
+        "@babel/typescript"
+    ]/*,
+    "plugins": [
+        "@babel/plugin-transform-modules-umd"
+    ]*/
+}

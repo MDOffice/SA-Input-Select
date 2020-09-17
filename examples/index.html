@@ -1,0 +1,35 @@
+<html>
+<head>
+    <title>SA-Input-Select Examples</title>
+
+    <link href="main.css" rel="stylesheet">
+
+</head>
+<body>
+<h1>SA-Input-Select</h1>
+
+<sa-input-select id="input1">
+    <option>el1</option>
+    <option>el2</option>
+    <option>el3</option>
+</sa-input-select>
+
+<sa-input-select id="input2" value="code12" data-is-append>
+    <option>code1</option>
+    <option>code2</option>
+    <option>code3</option>
+</sa-input-select>
+
+<sa-input-select id="input3" value="code12" data-is-append="true" data-append-separator="||">
+    <option>code1</option>
+    <option>code2</option>
+    <option>code3</option>
+</sa-input-select>
+
+<button type="button" onclick="alert(document.getElementById('input1').value)">get value</button>
+
+<!-- Main -->
+<script src="main.umd.js"></script>
+
+</body>
+</html>
