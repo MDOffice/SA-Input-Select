@@ -139,10 +139,6 @@ class SAInputSelect extends HTMLElement {
         document.addEventListener('click', this.hideDropdown.bind(this));
     }
 
-    render() {
-        this.$element.removeAttr('name');// after copy to Input
-    }
-
     static get observedAttributes() {
         return ['data-is-append', 'data-append-separator'];
     }

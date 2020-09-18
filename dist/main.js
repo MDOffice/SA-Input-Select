@@ -288,11 +288,6 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
     value: function assignEvent() {
       document.addEventListener('click', this.hideDropdown.bind(this));
     }
-  }, {
-    key: "render",
-    value: function render() {
-      this.$element.removeAttr('name'); // after copy to Input
-    }
   }], [{
     key: "observedAttributes",
     get: function get() {
