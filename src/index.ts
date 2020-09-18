@@ -23,6 +23,11 @@ class SAInputSelect extends HTMLElement {
 
         this._isAppend = false;
         this._appendSeparator = ' ';
+
+        this.handleInputClick = this.handleInputClick.bind(this);
+        this.hideDropdown = this.hideDropdown.bind(this);
+        this.handleInputChange = this.handleInputChange.bind(this);
+        this.hideDropdown = this.hideDropdown.bind(this);
     }
 
     attributeChangedCallback(attrName, oldValue, newValue) {
@@ -55,7 +60,7 @@ class SAInputSelect extends HTMLElement {
     disconnectedCallback() {
         this._input.removeEventListener('click', this.handleInputClick);
         this._input.removeEventListener('keydown', this.hideDropdown);
-        this._input.removeEventListener('change', this.makeChangeEvent);
+        this._input.removeEventListener('change', this.handleInputChange);
 
         this.removeChild(this.getElementsByTagName('div').item(0));
         delete this._input;
@@ -75,9 +80,9 @@ class SAInputSelect extends HTMLElement {
         if (disabled != undefined)
             this._input.setAttribute('disabled', this.getAttribute('disabled'));
         this._input.value = this.getAttribute('value') || '';
-        this._input.addEventListener('click', this.handleInputClick.bind(this));
-        this._input.addEventListener('keydown', this.hideDropdown.bind(this));
-        this._input.addEventListener('change', this.makeChangeEvent.bind(this));
+        this._input.addEventListener('click', this.handleInputClick);
+        this._input.addEventListener('keydown', this.hideDropdown);
+        this._input.addEventListener('change', this.handleInputChange);
 
         shadow.appendChild(this._input);
     }
@@ -120,6 +125,12 @@ class SAInputSelect extends HTMLElement {
         }
     }
 
+    handleInputChange(ev: MouseEvent) {
+        ev.stopPropagation();
+        this.value = ev.target.value;
+        this.makeChangeEvent();
+    }
+
     handleItemClick(text: string) {
         if (this._isAppend) {
             this.value += this._appendSeparator + text.replace(/^&nbsp;$/, '');
@@ -131,12 +142,12 @@ class SAInputSelect extends HTMLElement {
     }
 
     makeChangeEvent() {
-        const event = new Event('change');
+        const event = new Event('change', { bubbles: true });
         this.dispatchEvent(event);
     }
 
     assignEvent() {
-        document.addEventListener('click', this.hideDropdown.bind(this));
+        document.addEventListener('click', this.hideDropdown);
     }
 
     static get observedAttributes() {

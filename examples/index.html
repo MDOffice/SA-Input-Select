@@ -31,16 +31,10 @@
 <!-- Main -->
 <script src="main.umd.js"></script>
 <script>
-    document.getElementById('input3').addEventListener('change', function () {
-        alert('onChange: ' + this.value);
-    })
-</script>
-
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script>
-    $('#input3').on('change', function () {
-        alert('$onChange: ' + this.value);
-    });
+    document.getElementById('input3')
+        .addEventListener('change', function () {
+            alert('onChange: ' + this.value);
+        });
 </script>
 
 </body>

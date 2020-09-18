@@ -159,6 +159,10 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
     _this = _super.call(this);
     _this._isAppend = false;
     _this._appendSeparator = ' ';
+    _this.handleInputClick = _this.handleInputClick.bind(_assertThisInitialized(_this));
+    _this.hideDropdown = _this.hideDropdown.bind(_assertThisInitialized(_this));
+    _this.handleInputChange = _this.handleInputChange.bind(_assertThisInitialized(_this));
+    _this.hideDropdown = _this.hideDropdown.bind(_assertThisInitialized(_this));
     return _this;
   }
 
@@ -197,7 +201,7 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
 
       this._input.removeEventListener('keydown', this.hideDropdown);
 
-      this._input.removeEventListener('change', this.makeChangeEvent);
+      this._input.removeEventListener('change', this.handleInputChange);
 
       this.removeChild(this.getElementsByTagName('div').item(0));
       delete this._input;
@@ -218,11 +222,11 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
       if (disabled != undefined) this._input.setAttribute('disabled', this.getAttribute('disabled'));
       this._input.value = this.getAttribute('value') || '';
 
-      this._input.addEventListener('click', this.handleInputClick.bind(this));
+      this._input.addEventListener('click', this.handleInputClick);
 
-      this._input.addEventListener('keydown', this.hideDropdown.bind(this));
+      this._input.addEventListener('keydown', this.hideDropdown);
 
-      this._input.addEventListener('change', this.makeChangeEvent.bind(this));
+      this._input.addEventListener('change', this.handleInputChange);
 
       shadow.appendChild(this._input);
     }
@@ -275,6 +279,13 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
       }
     }
   }, {
+    key: "handleInputChange",
+    value: function handleInputChange(ev) {
+      ev.stopPropagation();
+      this.value = ev.target.value;
+      this.makeChangeEvent();
+    }
+  }, {
     key: "handleItemClick",
     value: function handleItemClick(text) {
       if (this._isAppend) {
@@ -289,13 +300,15 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
   }, {
     key: "makeChangeEvent",
     value: function makeChangeEvent() {
-      var event = new Event('change');
+      var event = new Event('change', {
+        bubbles: true
+      });
       this.dispatchEvent(event);
     }
   }, {
     key: "assignEvent",
     value: function assignEvent() {
-      document.addEventListener('click', this.hideDropdown.bind(this));
+      document.addEventListener('click', this.hideDropdown);
     }
   }], [{
     key: "observedAttributes",
