@@ -89,7 +89,7 @@ class SAInputSelect extends HTMLElement {
 
     makeDropdown(shadow: HTMLElement) {
         this._dropdown = document.createElement('ul');
-        this._dropdown.setAttribute('class', this.getAttribute('dropdown-class') || 'dropdown-menu');
+        this._dropdown.setAttribute('class', 'sa-input-select-dropdown ' + this.getAttribute('dropdown-class') || '');
         //this._dropdown.className = 'dropdown-menu';
         const options = this.getElementsByTagName('option');
         Array.from(options).forEach((el: HTMLOptionElement) => {
@@ -104,11 +104,14 @@ class SAInputSelect extends HTMLElement {
             li.appendChild(a);
             this._dropdown.appendChild(li);
         });
-        shadow.appendChild(this._dropdown);
+        //shadow.appendChild(this._dropdown);
     }
 
     hideDropdown() {
+        const body = document.getElementsByTagName('body').item(0);
+
         if (this._dropdown.classList.contains('open')) {
+            body.removeChild(this._dropdown);
             this._dropdown.classList.remove('open');
         }
     }
@@ -116,18 +119,37 @@ class SAInputSelect extends HTMLElement {
     handleInputClick(ev: MouseEvent) {
         ev.stopPropagation();
 
+        const body = document.getElementsByTagName('body').item(0);
+
         if (this._dropdown.classList.contains('open')) {
+            body.removeChild(this._dropdown);
             this._dropdown.classList.remove('open');
         } else {
+            body.appendChild(this._dropdown);
             this._dropdown.classList.add('open');
-            this._dropdown.style.top = ev.target.offsetTop + ev.target.offsetHeight;
-            this._dropdown.style.left = ev.target.offsetLeft;
+            const el = ev.target as HTMLInputElement;
+            const height = el.offsetHeight;
+            const { left: offsetLeft, top: offsetTop } = this.getGlobalOffset(el);
+            console.log(offsetLeft, offsetTop);
+            this._dropdown.style.top = (offsetTop + height) + 'px';
+            this._dropdown.style.left = offsetLeft + 'px';
         }
+    }
+
+    getGlobalOffset(el: HTMLElement): {left: number, top: number} {
+        let x = 0, y = 0;
+        while (el) {
+            x += el.offsetLeft;
+            y += el.offsetTop;
+            el = el.offsetParent as HTMLElement;
+        }
+        return { left: x, top: y };
     }
 
     handleInputChange(ev: MouseEvent) {
         ev.stopPropagation();
-        this.value = ev.target.value;
+        const el = ev.target as HTMLInputElement;
+        this.value = el.value;
         this.makeChangeEvent();
     }
 

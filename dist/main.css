@@ -6,7 +6,7 @@ sa-input-select option {
     display: none;
 }
 
-sa-input-select .dropdown-menu {
+.sa-input-select-dropdown {
     display: none;
     position: absolute;
 
@@ -24,16 +24,16 @@ sa-input-select .dropdown-menu {
     background-clip: padding-box;
 }
 
-sa-input-select .dropdown-menu.open {
+.sa-input-select-dropdown.open {
     display: block;
 }
 
-sa-input-select .dropdown-menu>li {
+.sa-input-select-dropdown>li {
     position: relative;
     margin-bottom: 1px;
 }
 
-sa-input-select .dropdown-menu>li>a {
+.sa-input-select-dropdown>li>a {
     display: block;
     padding: 3px 15px;
     clear: both;
@@ -47,8 +47,8 @@ sa-input-select .dropdown-menu>li>a {
     text-overflow: ellipsis;
 }
 
-sa-input-select .dropdown-menu>li>a:focus,
-sa-input-select .dropdown-menu>li>a:hover {
+.sa-input-select-dropdown>li>a:focus,
+.sa-input-select-dropdown>li>a:hover {
     text-decoration: none;
     background-color: #3572b0;
     color: #fff;

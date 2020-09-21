@@ -228,7 +228,7 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
 
       this._dropdown = document.createElement('ul');
 
-      this._dropdown.setAttribute('class', this.getAttribute('dropdown-class') || 'dropdown-menu'); //this._dropdown.className = 'dropdown-menu';
+      this._dropdown.setAttribute('class', 'sa-input-select-dropdown ' + this.getAttribute('dropdown-class') || false); //this._dropdown.className = 'dropdown-menu';
 
 
       var options = this.getElementsByTagName('option');
@@ -245,13 +245,16 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
         li.appendChild(a);
 
         _this2._dropdown.appendChild(li);
-      });
-      shadow.appendChild(this._dropdown);
+      }); //shadow.appendChild(this._dropdown);
     }
   }, {
     key: "hideDropdown",
     value: function hideDropdown() {
+      var body = document.getElementsByTagName('body').item(0);
+
       if (this._dropdown.classList.contains('open')) {
+        body.removeChild(this._dropdown);
+
         this._dropdown.classList.remove('open');
       }
     }
@@ -259,21 +262,52 @@ var SAInputSelect = /*#__PURE__*/function (_HTMLElement) {
     key: "handleInputClick",
     value: function handleInputClick(ev) {
       ev.stopPropagation();
+      var body = document.getElementsByTagName('body').item(0);
 
       if (this._dropdown.classList.contains('open')) {
+        body.removeChild(this._dropdown);
+
         this._dropdown.classList.remove('open');
       } else {
+        body.appendChild(this._dropdown);
+
         this._dropdown.classList.add('open');
 
-        this._dropdown.style.top = ev.target.offsetTop + ev.target.offsetHeight;
-        this._dropdown.style.left = ev.target.offsetLeft;
+        var el = ev.target;
+        var height = el.offsetHeight;
+
+        var _this$getGlobalOffset = this.getGlobalOffset(el),
+            offsetLeft = _this$getGlobalOffset.left,
+            offsetTop = _this$getGlobalOffset.top;
+
+        console.log(offsetLeft, offsetTop);
+        this._dropdown.style.top = offsetTop + height + 'px';
+        this._dropdown.style.left = offsetLeft + 'px';
       }
+    }
+  }, {
+    key: "getGlobalOffset",
+    value: function getGlobalOffset(el) {
+      var x = 0,
+          y = 0;
+
+      while (el) {
+        x += el.offsetLeft;
+        y += el.offsetTop;
+        el = el.offsetParent;
+      }
+
+      return {
+        left: x,
+        top: y
+      };
     }
   }, {
     key: "handleInputChange",
     value: function handleInputChange(ev) {
       ev.stopPropagation();
-      this.value = ev.target.value;
+      var el = ev.target;
+      this.value = el.value;
       this.makeChangeEvent();
     }
   }, {
